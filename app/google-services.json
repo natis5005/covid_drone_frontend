@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "774198303497",
+    "firebase_url": "https://covid-drone-default-rtdb.firebaseio.com",
+    "project_id": "covid-drone",
+    "storage_bucket": "covid-drone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774198303497:android:3ca1a020a4b594ac8291d8",
+        "android_client_info": {
+          "package_name": "com.codingwithmitch.googlemaps2018"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774198303497-0n5da8bahvi2hkss2croejo04720mu0r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPeesyMSnCiE4VhaQ1-tAGgOn5a6Xif48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774198303497-0n5da8bahvi2hkss2croejo04720mu0r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
