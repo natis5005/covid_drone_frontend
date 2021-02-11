@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.ui;
+package com.CovidDrone.ui;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -15,12 +15,12 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 
-import com.codingwithmitch.googlemaps2018.R;
-import com.codingwithmitch.googlemaps2018.UserClient;
-import com.codingwithmitch.googlemaps2018.adapters.ChatMessageRecyclerAdapter;
-import com.codingwithmitch.googlemaps2018.models.ChatMessage;
-import com.codingwithmitch.googlemaps2018.models.Chatroom;
-import com.codingwithmitch.googlemaps2018.models.User;
+import com.CovidDrone.R;
+import com.CovidDrone.UserClient;
+import com.CovidDrone.adapters.ChatMessageRecyclerAdapter;
+import com.CovidDrone.models.ChatMessage;
+import com.CovidDrone.models.Chatroom;
+import com.CovidDrone.models.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -77,7 +77,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void getChatMessages(){
 
         CollectionReference messagesRef = mDb
-                .collection(getString(R.string.collection_chatrooms))
+                .collection(getString(R.string.collection_requests))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chat_messages));
 
@@ -112,7 +112,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void getChatroomUsers(){
 
         CollectionReference usersRef = mDb
-                .collection(getString(R.string.collection_chatrooms))
+                .collection(getString(R.string.collection_requests))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chatroom_user_list));
 
@@ -177,7 +177,7 @@ public class ChatroomActivity extends AppCompatActivity implements
             message = message.replaceAll(System.getProperty("line.separator"), "");
 
             DocumentReference newMessageDoc = mDb
-                    .collection(getString(R.string.collection_chatrooms))
+                    .collection(getString(R.string.collection_requests))
                     .document(mChatroom.getChatroom_id())
                     .collection(getString(R.string.collection_chat_messages))
                     .document();
@@ -239,7 +239,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void leaveChatroom(){
 
         DocumentReference joinChatroomRef = mDb
-                .collection(getString(R.string.collection_chatrooms))
+                .collection(getString(R.string.collection_requests))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chatroom_user_list))
                 .document(FirebaseAuth.getInstance().getUid());
@@ -250,7 +250,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void joinChatroom(){
 
         DocumentReference joinChatroomRef = mDb
-                .collection(getString(R.string.collection_chatrooms))
+                .collection(getString(R.string.collection_requests))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chatroom_user_list))
                 .document(FirebaseAuth.getInstance().getUid());

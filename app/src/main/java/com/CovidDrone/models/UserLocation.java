@@ -1,7 +1,4 @@
-package com.codingwithmitch.googlemaps2018.models;
-
-import android.os.Parcel;
-import android.os.Parcelable;
+package com.CovidDrone.models;
 
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ServerTimestamp;

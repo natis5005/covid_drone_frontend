@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018;
+package com.CovidDrone;
 
 public class Constants {
 

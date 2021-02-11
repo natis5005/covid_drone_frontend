@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.ui;
+package com.CovidDrone.ui;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -26,12 +26,11 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.codingwithmitch.googlemaps2018.R;
-import com.codingwithmitch.googlemaps2018.UserClient;
-import com.codingwithmitch.googlemaps2018.adapters.ChatroomRecyclerAdapter;
-import com.codingwithmitch.googlemaps2018.models.Chatroom;
-import com.codingwithmitch.googlemaps2018.models.User;
-import com.codingwithmitch.googlemaps2018.models.UserLocation;
+import com.CovidDrone.R;
+import com.CovidDrone.adapters.ChatroomRecyclerAdapter;
+import com.CovidDrone.models.Chatroom;
+import com.CovidDrone.models.User;
+import com.CovidDrone.models.UserLocation;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -57,9 +56,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import static com.codingwithmitch.googlemaps2018.Constants.ERROR_DIALOG_REQUEST;
-import static com.codingwithmitch.googlemaps2018.Constants.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
-import static com.codingwithmitch.googlemaps2018.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
+import static com.CovidDrone.Constants.ERROR_DIALOG_REQUEST;
+import static com.CovidDrone.Constants.PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
+import static com.CovidDrone.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -279,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void initSupportActionBar(){
-        setTitle("Chatrooms");
+        setTitle("Requests");
     }
 
 
@@ -307,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements
         mDb.setFirestoreSettings(settings);
 
         CollectionReference chatroomsCollection = mDb
-                .collection(getString(R.string.collection_chatrooms));
+                .collection(getString(R.string.collection_requests));
 
         mChatroomEventListener = chatroomsCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -347,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements
 //        mDb.setFirestoreSettings(settings);
 
         DocumentReference newChatroomRef = mDb
-                .collection(getString(R.string.collection_chatrooms))
+                .collection(getString(R.string.collection_requests))
                 .document();
 
         chatroom.setChatroom_id(newChatroomRef.getId());
@@ -376,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements
     private void newChatroomDialog(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Enter a chatroom name");
+        builder.setTitle("Enter a request name");
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -389,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements
                     buildNewChatroom(input.getText().toString());
                 }
                 else {
-                    Toast.makeText(MainActivity.this, "Enter a chatroom name", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Enter a request name", Toast.LENGTH_SHORT).show();
                 }
             }
         });

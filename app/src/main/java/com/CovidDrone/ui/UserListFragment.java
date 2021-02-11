@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.ui;
+package com.CovidDrone.ui;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -14,20 +14,16 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-import com.codingwithmitch.googlemaps2018.R;
-import com.codingwithmitch.googlemaps2018.adapters.UserRecyclerAdapter;
-import com.codingwithmitch.googlemaps2018.models.User;
-import com.google.android.gms.maps.CameraUpdateFactory;
+import com.CovidDrone.R;
+import com.CovidDrone.adapters.UserRecyclerAdapter;
+import com.CovidDrone.models.User;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
-import static com.codingwithmitch.googlemaps2018.Constants.MAPVIEW_BUNDLE_KEY;
+import static com.CovidDrone.Constants.MAPVIEW_BUNDLE_KEY;
 
 public class UserListFragment extends Fragment implements OnMapReadyCallback {
 

@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.ui;
+package com.CovidDrone.ui;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,9 +10,9 @@ import android.view.View;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.codingwithmitch.googlemaps2018.R;
-import com.codingwithmitch.googlemaps2018.UserClient;
-import com.codingwithmitch.googlemaps2018.models.User;
+import com.CovidDrone.R;
+import com.CovidDrone.UserClient;
+import com.CovidDrone.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 

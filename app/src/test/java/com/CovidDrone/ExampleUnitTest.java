@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018;
+package com.CovidDrone;
 
 import org.junit.Test;
 

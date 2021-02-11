@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.adapters;
+package com.CovidDrone.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -9,9 +9,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.codingwithmitch.googlemaps2018.R;
-import com.codingwithmitch.googlemaps2018.models.ChatMessage;
-import com.codingwithmitch.googlemaps2018.models.User;
+import com.CovidDrone.R;
+import com.CovidDrone.models.ChatMessage;
+import com.CovidDrone.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;

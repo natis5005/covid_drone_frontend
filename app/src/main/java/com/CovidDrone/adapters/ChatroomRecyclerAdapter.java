@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.adapters;
+package com.CovidDrone.adapters;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
-import com.codingwithmitch.googlemaps2018.R;
-import com.codingwithmitch.googlemaps2018.models.Chatroom;
+import com.CovidDrone.R;
+import com.CovidDrone.models.Chatroom;
 
 import java.util.ArrayList;
 

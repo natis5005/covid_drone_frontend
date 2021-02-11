@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.codingwithmitch.googlemaps2018">
+    package="com.CovidDrone">
 
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -11,7 +11,7 @@
         android:required="true"/>
 
     <application
-        android:name=".UserClient"
+        android:name="com.CovidDrone.UserClient"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -19,18 +19,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".ui.MainActivity">
+        <activity android:name="com.CovidDrone.ui.MainActivity">
         </activity>
-        <activity android:name=".ui.LoginActivity" >
+        <activity android:name="com.CovidDrone.ui.LoginActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.RegisterActivity" />
-        <activity android:name=".ui.ChatroomActivity" />
-        <activity android:name=".ui.ProfileActivity"/>
+        <activity android:name="com.CovidDrone.ui.RegisterActivity" />
+        <activity android:name="com.CovidDrone.ui.ChatroomActivity" />
+        <activity android:name="com.CovidDrone.ui.ProfileActivity"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

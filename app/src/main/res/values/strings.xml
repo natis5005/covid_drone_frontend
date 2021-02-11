@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GoogleMaps2018</string>
+    <string name="app_name">com.CovidDrone</string>
 
     <string name="google_maps_api_key">AIzaSyBte65PalnCmIsEGKX5plmNNWQaOTzIxac</string>
 
@@ -25,7 +25,7 @@
 
     <!-- Firestore Strings -->
     <string name="collection_users">Users</string>
-    <string name="collection_chatrooms">Chatrooms</string>
+    <string name="collection_requests">Requests</string>
     <string name="collection_chat_messages">Chat Messages</string>
     <string name="collection_chatroom_user_list">User List</string>
     <string name="collection_user_locations">User Locations</string>

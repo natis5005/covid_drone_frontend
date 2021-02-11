@@ -1,4 +1,4 @@
-package com.codingwithmitch.googlemaps2018.util;
+package com.CovidDrone.util;
 
 public class Check {
 
