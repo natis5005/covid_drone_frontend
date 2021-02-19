@@ -32,6 +32,7 @@ public class LoginActivity extends AppCompatActivity implements
 {
 
     private static final String TAG = "LoginActivity";
+    public static final String EXTRA_MESSAGE = "com.CovidDrone.ui.EMAIL";
 
     //Firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -169,6 +170,9 @@ public class LoginActivity extends AppCompatActivity implements
         switch (view.getId()){
             case R.id.link_register:{
                 Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                EditText editText = findViewById(R.id.email);
+                String email = editText.getText().toString();
+                intent.putExtra(EXTRA_MESSAGE, email);
                 startActivity(intent);
                 break;
             }
