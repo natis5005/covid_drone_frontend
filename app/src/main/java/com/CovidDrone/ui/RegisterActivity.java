@@ -157,9 +157,14 @@ public class RegisterActivity extends AppCompatActivity implements
 
                     //check if passwords match
                     if(doStringsMatch(mPassword.getText().toString(), mConfirmPassword.getText().toString())){
-
-                        //Initiate registration task
-                        registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
+                        if(mPassword.length() <= 6) {
+                            Toast.makeText(RegisterActivity.this, "Password must " +
+                                    "be at least 7 characters", Toast.LENGTH_SHORT).show();
+                        }
+                        else {
+                            //Initiate registration task
+                            registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
+                        }
                     }else{
                         Toast.makeText(RegisterActivity.this, "Passwords do not Match", Toast.LENGTH_SHORT).show();
                     }

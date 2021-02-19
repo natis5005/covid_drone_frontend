@@ -28,7 +28,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.CovidDrone.ui.RegisterActivity" />
+        <activity android:name="com.CovidDrone.ui.RegisterActivity"
+            android:parentActivityName=".ui.LoginActivity">
+            <!-- The meta-data tag is required if you support API level 15 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.LoginActivity" />
+        </activity>
+
         <activity android:name="com.CovidDrone.ui.ChatroomActivity" />
         <activity android:name="com.CovidDrone.ui.ProfileActivity"/>
 
