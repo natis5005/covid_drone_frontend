@@ -44,11 +44,13 @@ public class RegisterActivity extends AppCompatActivity implements
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        mEmail = (EditText) findViewById(R.id.input_email);
-        mPassword = (EditText) findViewById(R.id.input_password);
-        mConfirmPassword = (EditText) findViewById(R.id.input_confirm_password);
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+        mEmail = findViewById(R.id.input_email);
+        mPassword = findViewById(R.id.input_password);
+        mConfirmPassword = findViewById(R.id.input_confirm_password);
+        mProgressBar = findViewById(R.id.progressBar);
 
+        Intent intent = getIntent();
+        mEmail.setText(intent.getStringExtra(LoginActivity.EXTRA_MESSAGE));
         findViewById(R.id.btn_register).setOnClickListener(this);
 
         mDb = FirebaseFirestore.getInstance();
@@ -58,8 +60,8 @@ public class RegisterActivity extends AppCompatActivity implements
 
     /**
      * Register a new email and password to Firebase Authentication
-     * @param email
-     * @param password
+     * @param email user's email
+     * @param password user's password
      */
     public void registerNewEmail(final String email, String password){
 
