@@ -12,4 +12,9 @@
         android:id="@+id/action_chatroom_leave"
         android:title="@string/action_leave_chatroom"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_chatroom_qr"
+        android:title="Get QR code"
+        app:showAsAction="never" />
 </menu>

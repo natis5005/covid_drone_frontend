@@ -1,5 +1,7 @@
 package com.CovidDrone.ui;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,12 +10,15 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.CovidDrone.R;
 import com.CovidDrone.UserClient;
@@ -49,13 +54,14 @@ public class ChatroomActivity extends AppCompatActivity implements
     private EditText mMessage;
 
     //vars
-    private ListenerRegistration mChatMessageEventListener, mUserListEventListener;
+    private ListenerRegistration mChatMessageEventListener, mUserListEventListener, mChatroomEventListener;
     private RecyclerView mChatMessageRecyclerView;
     private ChatMessageRecyclerAdapter mChatMessageRecyclerAdapter;
     private FirebaseFirestore mDb;
     private ArrayList<ChatMessage> mMessages = new ArrayList<>();
     private Set<String> mMessageIds = new HashSet<>();
     private ArrayList<User> mUserList = new ArrayList<>();
+    private String idForQR;
 
 
     @Override
@@ -236,6 +242,30 @@ public class ChatroomActivity extends AppCompatActivity implements
         }
     }
 
+    private void createQR(){
+       DocumentReference request = mDb.collection(getString(R.string.collection_requests)).document(mChatroom.getChatroom_id());
+        String id = mChatroom.getChatroom_id();
+        Log.d(TAG, "onEvent queeeeerryyyyy: called with id:" + id);
+
+        ImageView image = new ImageView(this);
+        image.setImageResource(R.drawable.cwm_logo);
+
+        AlertDialog.Builder builder =
+                new AlertDialog.Builder(this).
+                        setMessage("This is your QR code").
+                        setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        }).
+                        setView(image);
+        builder.create().show();
+
+
+
+    }
+
     private void leaveChatroom(){
 
         DocumentReference joinChatroomRef = mDb
@@ -309,6 +339,10 @@ public class ChatroomActivity extends AppCompatActivity implements
             }
             case R.id.action_chatroom_leave:{
                 leaveChatroom();
+                return true;
+            }
+            case R.id.action_chatroom_qr:{
+                createQR();
                 return true;
             }
             default:{
