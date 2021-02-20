@@ -25,7 +25,7 @@
 
     <!-- Firestore Strings -->
     <string name="collection_users">Users</string>
-    <string name="collection_requests">Requests</string>
+    <string name="collection_requests">Requests2</string>
     <string name="collection_chat_messages">Chat Messages</string>
     <string name="collection_chatroom_user_list">User List</string>
     <string name="collection_user_locations">User Locations</string>
@@ -50,6 +50,13 @@
     <string name="action_chatroom_qr">Get QR</string>
     <string name="action_chatroom_user_list">User list</string>
     <string name="action_profile">Profile</string>
+    <string name="request_name">Blank</string>
+    <string name="request_cancel">Cancel</string>
+    <string name="request_time">Time of request:</string>
+    <string name="request_location">Location of request</string>
+    <string name="chat">Chat with the team</string>
+    <string name="add_request_desc">Create a new request</string>
+    <string name="qrCodeDesc">Scan this QR code when the drone reaches you:</string>
 
 
 </resources>

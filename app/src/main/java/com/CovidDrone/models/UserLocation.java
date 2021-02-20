@@ -1,11 +1,14 @@
 package com.CovidDrone.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ServerTimestamp;
 
 import java.util.Date;
 
-public class UserLocation {
+public class UserLocation implements Parcelable {
 
     private User user;
     private GeoPoint geo_point;
@@ -20,6 +23,28 @@ public class UserLocation {
     public UserLocation() {
 
     }
+
+    protected UserLocation(Parcel in) {
+        user = in.readParcelable(User.class.getClassLoader());
+        double lat, longt;
+        lat = in.readDouble();
+        longt = in.readDouble();
+        geo_point = new GeoPoint(lat, longt);
+        in.readString();
+        timestamp = null;
+    }
+
+    public static final Creator<UserLocation> CREATOR = new Creator<UserLocation>() {
+        @Override
+        public UserLocation createFromParcel(Parcel in) {
+            return new UserLocation(in);
+        }
+
+        @Override
+        public UserLocation[] newArray(int size) {
+            return new UserLocation[size];
+        }
+    };
 
     public User getUser() {
         return user;
@@ -54,4 +79,16 @@ public class UserLocation {
                 '}';
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(user, flags);
+        dest.writeDouble(geo_point.getLatitude());
+        dest.writeDouble(geo_point.getLongitude());
+        dest.writeString("");
+    }
 }

@@ -3,6 +3,7 @@ package com.CovidDrone.ui;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.arch.lifecycle.ViewModelProvider;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,18 +18,17 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.CovidDrone.R;
-import com.CovidDrone.adapters.ChatroomRecyclerAdapter;
-import com.CovidDrone.models.Chatroom;
+import com.CovidDrone.UseCases.Request;
+import com.CovidDrone.UserClient;
+import com.CovidDrone.adapters.RequestRecyclerAdapter;
 import com.CovidDrone.models.User;
 import com.CovidDrone.models.UserLocation;
 import com.google.android.gms.common.ConnectionResult;
@@ -36,8 +36,10 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -50,6 +52,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.type.Date;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,67 +67,134 @@ import static com.CovidDrone.Constants.PERMISSIONS_REQUEST_ENABLE_GPS;
 
 public class MainActivity extends AppCompatActivity implements
         View.OnClickListener,
-        ChatroomRecyclerAdapter.ChatroomRecyclerClickListener
+        RequestRecyclerAdapter.RequestRecyclerClickListener
 {
 
     private static final String TAG = "MainActivity";
+    public static final String EXTRA_MESSAGE = "com.CovidDrone.ui.requestName";
 
     //widgets
     private ProgressBar mProgressBar;
 
     //vars
-    private ArrayList<Chatroom> mChatrooms = new ArrayList<>();
+    /*private ArrayList<Chatroom> mChatrooms = new ArrayList<>();
     private Set<String> mChatroomIds = new HashSet<>();
     private ChatroomRecyclerAdapter mChatroomRecyclerAdapter;
     private RecyclerView mChatroomRecyclerView;
     private ListenerRegistration mChatroomEventListener;
+    */
+
+    private ArrayList<Request> mRequests = new ArrayList<>();
+    private Set<String> mRequestIds = new HashSet<>();
+    private RequestRecyclerAdapter mRequestRecyclerAdapter;
+    private RecyclerView mRequestRecyclerView;
+    private ListenerRegistration mRequestEventListener;
+
     private FirebaseFirestore mDb;
     private boolean mLocationPermissionGranted = false;
     private FusedLocationProviderClient mFusedLocationClient;
-    private UserLocation mUserLocation;
+    private UserLocation mUserData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mProgressBar = findViewById(R.id.progressBar);
-        mChatroomRecyclerView = findViewById(R.id.chatrooms_recycler_view);
 
-        findViewById(R.id.fab_create_chatroom).setOnClickListener(this);
+        setContentView(R.layout.activity_main);
+
+
+        mProgressBar = findViewById(R.id.progressBar);
+        // mChatroomRecyclerView = findViewById(R.id.chatrooms_recycler_view);
+        mRequestRecyclerView = findViewById(R.id.chatrooms_recycler_view);
+        findViewById(R.id.fab_create_request).setOnClickListener(this);
+
+        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
+                .setTimestampsInSnapshotsEnabled(true)
+                .setPersistenceEnabled(true)
+                .build();
 
         mDb = FirebaseFirestore.getInstance();
+        mDb.setFirestoreSettings(settings);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mUserData = new UserLocation();
+        mUserData.setUser(((UserClient)(getApplicationContext())).getUser());
 
         initSupportActionBar();
-        initChatroomRecyclerView();
-
-
+        initRequestRecyclerView();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
 
-    private void getUserDetails(){
-        if(mUserLocation == null){
-            Log.d(TAG, "user is null 2");
-            mUserLocation = new UserLocation();
-            DocumentReference userRef = mDb.collection(getString(R.string.collection_users))
-                    .document(FirebaseAuth.getInstance().getUid());
+        if(checkMapServices()){
+            if(!mLocationPermissionGranted){
+                getLocationPermission();
+            }
+        }
 
-            userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if(task.isSuccessful()){
-                        Log.d(TAG, "onComplete: successfully set the user client.");
-                        User user = task.getResult().toObject(User.class);
-                        mUserLocation.setUser(user);
-                        getLastKnownLocation();
-                    }
+        getUserDetails();
+        getRequests();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        mLocationPermissionGranted = false;
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mLocationPermissionGranted = true;
                 }
-            });
+            }
         }
-        else{
-            Log.e(TAG, "user is not null 2");
-            getLastKnownLocation();
+    }
+
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.fab_create_request) {
+            newRequestDialog();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mRequestEventListener != null){
+            mRequestEventListener.remove();
+        }
+    }
+
+    @Override
+    public void onRequestSelected(int position) {
+        navRequestActivity(mRequests.get(position));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.action_sign_out:{
+                signOut();
+                return true;
+            }
+            case R.id.action_profile:{
+                startActivity(new Intent(this, ProfileActivity.class));
+                return true;
+            }
+            default:{
+                return super.onOptionsItemSelected(item);
+            }
+        }
+
     }
 
     private void getLastKnownLocation() {
@@ -138,14 +208,14 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onComplete(@NonNull Task<android.location.Location> task) {
                 if (task.isSuccessful()) {
-                    Log.i(TAG, "task sucess");
+                    Log.i(TAG, "task success");
                     Location location = task.getResult();
                     if (location == null){
                         Log.i(TAG, "location null");
                     }
                     GeoPoint geoPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
-                    mUserLocation.setGeo_point(geoPoint);
-                    mUserLocation.setTimestamp(null);
+                    mUserData.setGeo_point(geoPoint);
+                    mUserData.setTimestamp(null);
                     saveUserLocation();
                 }
             }
@@ -155,18 +225,18 @@ public class MainActivity extends AppCompatActivity implements
 
     private void saveUserLocation(){
 
-        if(mUserLocation != null){
+        if(mUserData != null){
             DocumentReference locationRef = mDb
                     .collection(getString(R.string.collection_user_locations))
                     .document(FirebaseAuth.getInstance().getUid());
 
-            locationRef.set(mUserLocation).addOnCompleteListener(new OnCompleteListener<Void>() {
+            locationRef.set(mUserData).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if(task.isSuccessful()){
                         Log.d(TAG, "saveUserLocation: \ninserted user location into database." +
-                                "\n latitude: " + mUserLocation.getGeo_point().getLatitude() +
-                                "\n longitude: " + mUserLocation.getGeo_point().getLongitude());
+                                "\n latitude: " + mUserData.getGeo_point().getLatitude() +
+                                "\n longitude: " + mUserData.getGeo_point().getLongitude());
                     }
                 }
             });
@@ -180,6 +250,16 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         return false;
+    }
+
+    public boolean isMapsEnabled(){
+        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+            buildAlertMessageNoGps();
+            return false;
+        }
+        return true;
     }
 
     private void buildAlertMessageNoGps() {
@@ -196,16 +276,6 @@ public class MainActivity extends AppCompatActivity implements
         alert.show();
     }
 
-    public boolean isMapsEnabled(){
-        final LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
-
-        if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
-            buildAlertMessageNoGps();
-            return false;
-        }
-        return true;
-    }
-
     private void getLocationPermission() {
         /*
          * Request location permission, so that we can get the location of the
@@ -216,8 +286,6 @@ public class MainActivity extends AppCompatActivity implements
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             mLocationPermissionGranted = true;
-            getChatrooms();
-            getUserDetails();
         } else {
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
@@ -246,72 +314,43 @@ public class MainActivity extends AppCompatActivity implements
         return false;
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
-                                           @NonNull int[] grantResults) {
-        mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "onActivityResult: called.");
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ENABLE_GPS: {
-                if(mLocationPermissionGranted){
-                    getChatrooms();
-                    getUserDetails();
-                }
-                else{
-                    getLocationPermission();
-                }
-            }
-        }
-
-    }
-
     private void initSupportActionBar(){
         setTitle("Requests");
     }
 
+    private void initRequestRecyclerView(){
+        mRequestRecyclerAdapter = new RequestRecyclerAdapter(mRequests, this);
+        mRequestRecyclerView.setAdapter(mRequestRecyclerAdapter);
+        mRequestRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+    }
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()){
+    private void getUserDetails(){
+        if(mUserData != null || mUserData.getUser() != null){
+            Log.e(TAG, "user is not null");
+            getLastKnownLocation();
+        }
+        else{
+            Log.d(TAG, "user is null");
+            mUserData = new UserLocation();
+            getLastKnownLocation();
+            DocumentReference docRef = mDb.collection(getString(R.string.collection_users))
+                    .document(FirebaseAuth.getInstance().getUid());
+            docRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    User user = documentSnapshot.toObject(User.class);
+                    mUserData.setUser(user);
+                }
+            });
 
-            case R.id.fab_create_chatroom:{
-                newChatroomDialog();
-            }
         }
     }
 
-    private void initChatroomRecyclerView(){
-        mChatroomRecyclerAdapter = new ChatroomRecyclerAdapter(mChatrooms, this);
-        mChatroomRecyclerView.setAdapter(mChatroomRecyclerAdapter);
-        mChatroomRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-    }
-
-    private void getChatrooms(){
-
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        mDb.setFirestoreSettings(settings);
-
-        CollectionReference chatroomsCollection = mDb
+    private void getRequests(){
+        CollectionReference requestsCollection = mDb
                 .collection(getString(R.string.collection_requests));
 
-        mChatroomEventListener = chatroomsCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        mRequestEventListener = requestsCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 Log.d(TAG, "onEvent: called.");
@@ -324,38 +363,38 @@ public class MainActivity extends AppCompatActivity implements
                 if(queryDocumentSnapshots != null){
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
 
-                        Chatroom chatroom = doc.toObject(Chatroom.class);
-                        if(!mChatroomIds.contains(chatroom.getChatroom_id())){
-                            mChatroomIds.add(chatroom.getChatroom_id());
-                            mChatrooms.add(chatroom);
+                        Request request = doc.toObject(Request.class);
+                        //only add requests this user has made
+                        if(!mRequestIds.contains(request.getRequestId()) &&
+                        request.getUserData().getUser().getUsername().equals(mUserData.getUser().getUsername())){
+
+                            mRequestIds.add(request.getRequestId());
+                            mRequests.add(request);
                         }
                     }
-                    Log.d(TAG, "onEvent: number of chatrooms: " + mChatrooms.size());
-                    mChatroomRecyclerAdapter.notifyDataSetChanged();
+                    Log.d(TAG, "onEvent: number of requests: " + mRequests.size());
+                    mRequestRecyclerAdapter.notifyDataSetChanged();
                 }
 
             }
         });
     }
 
-    private void buildNewChatroom(final String chatroomName){
+    private void buildNewRequest(final String requestName){
 
-        final Chatroom chatroom = new Chatroom();
-        chatroom.setTitle(chatroomName);
-
-        DocumentReference newChatroomRef = mDb
+        DocumentReference newRequestRef = mDb
                 .collection(getString(R.string.collection_requests))
                 .document();
 
-        chatroom.setChatroom_id(newChatroomRef.getId());
+        final Request request = new Request(requestName, mUserData, newRequestRef.getId());
 
-        newChatroomRef.set(chatroom).addOnCompleteListener(new OnCompleteListener<Void>() {
+        newRequestRef.set(request).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 hideDialog();
 
                 if(task.isSuccessful()){
-                    navChatroomActivity(chatroom);
+                    navRequestActivity(request);
                 }else{
                     View parentLayout = findViewById(android.R.id.content);
                     Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
@@ -363,14 +402,9 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setTimestampsInSnapshotsEnabled(true)
-                .build();
-        mDb.setFirestoreSettings(settings);
-
         CollectionReference requestsCollection = mDb.collection(getString(R.string.collection_requests));
 
-        mChatroomEventListener = requestsCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        mRequestEventListener = requestsCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 Log.d(TAG, "onEvent queeeeerryyyyy: called.");
@@ -383,10 +417,10 @@ public class MainActivity extends AppCompatActivity implements
                 if (queryDocumentSnapshots != null) {
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
 
-                        Chatroom chatroom = doc.toObject(Chatroom.class);
+                        Request request = doc.toObject(Request.class);
 
-                        if (chatroom.getTitle().equals(chatroomName)){
-                            Log.d(TAG, " new chatroom id to encode on QR code:" + chatroom.getChatroom_id());
+                        if (request.getTitle().equals(requestName)){
+                            Log.d(TAG, " new chatroom id to encode on QR code:" + request.getRequestId());
                         }
                     }
                 }
@@ -394,13 +428,13 @@ public class MainActivity extends AppCompatActivity implements
         });
     }
 
-    private void navChatroomActivity(Chatroom chatroom){
-        Intent intent = new Intent(MainActivity.this, ChatroomActivity.class);
-        intent.putExtra(getString(R.string.intent_chatroom), chatroom);
+    private void navRequestActivity(Request request){
+        Intent intent = new Intent(MainActivity.this, RequestActivity.class);
+        intent.putExtra(getString(R.string.intent_chatroom), request);
         startActivity(intent);
     }
 
-    private void newChatroomDialog(){
+   /* private void newChatroomDialog(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Enter a request name");
@@ -428,33 +462,28 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         builder.show();
-    }
+    }*/
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if(mChatroomEventListener != null){
-            mChatroomEventListener.remove();
-        }
-    }
+    private void newRequestDialog() {
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if(checkMapServices()){
-            if(mLocationPermissionGranted){
-                getChatrooms();
-                getUserDetails();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Create new request for COVID-19 swab?");
+
+        builder.setPositiveButton("CREATE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String requestName = "Request" + mUserData.getUser().getUsername() + mRequests.size();
+                buildNewRequest(requestName);
             }
-            else{
-                getLocationPermission();
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
             }
-        }
-    }
+        });
 
-    @Override
-    public void onChatroomSelected(int position) {
-        navChatroomActivity(mChatrooms.get(position));
+        builder.show();
     }
 
     private void signOut(){
@@ -465,31 +494,6 @@ public class MainActivity extends AppCompatActivity implements
         finish();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
-            case R.id.action_sign_out:{
-                signOut();
-                return true;
-            }
-            case R.id.action_profile:{
-                startActivity(new Intent(this, ProfileActivity.class));
-                return true;
-            }
-            default:{
-                return super.onOptionsItemSelected(item);
-            }
-        }
-
-    }
-
     private void showDialog(){
         mProgressBar.setVisibility(View.VISIBLE);
     }
@@ -497,6 +501,5 @@ public class MainActivity extends AppCompatActivity implements
     private void hideDialog(){
         mProgressBar.setVisibility(View.GONE);
     }
-
 
 }

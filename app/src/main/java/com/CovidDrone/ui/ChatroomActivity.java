@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,7 +18,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.CovidDrone.R;
 import com.CovidDrone.UserClient;
@@ -51,7 +49,6 @@ import java.util.Set;
 public class ChatroomActivity extends AppCompatActivity implements
         View.OnClickListener
 {
-
     private static final String TAG = "ChatroomActivity";
 
     //widgets
@@ -180,7 +177,6 @@ public class ChatroomActivity extends AppCompatActivity implements
 
     }
 
-
     private void insertNewMessage(){
         String message = mMessage.getText().toString();
 
@@ -237,7 +233,6 @@ public class ChatroomActivity extends AppCompatActivity implements
 	private void hideSoftKeyboard(){
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
-
 
     private void getIncomingIntent(){
         if(getIntent().hasExtra(getString(R.string.intent_chatroom))){
@@ -376,7 +371,7 @@ public class ChatroomActivity extends AppCompatActivity implements
             bitMatrix = new MultiFormatWriter().encode(
                     Value,
                     BarcodeFormat.DATA_MATRIX.QR_CODE,
-                    150, 150, null
+                    500, 500, null
             );
 
         } catch (IllegalArgumentException Illegalargumentexception) {
@@ -400,7 +395,7 @@ public class ChatroomActivity extends AppCompatActivity implements
         }
         Bitmap bitmap = Bitmap.createBitmap(bitMatrixWidth, bitMatrixHeight, Bitmap.Config.ARGB_4444);
 
-        bitmap.setPixels(pixels, 0, 150, 0, 0, bitMatrixWidth, bitMatrixHeight);
+        bitmap.setPixels(pixels, 0, 500, 0, 0, bitMatrixWidth, bitMatrixHeight);
         return bitmap;
     }
 

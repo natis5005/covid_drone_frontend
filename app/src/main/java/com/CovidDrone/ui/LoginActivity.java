@@ -91,6 +91,7 @@ public class LoginActivity extends AppCompatActivity implements
                     FirebaseFirestore db = FirebaseFirestore.getInstance();
                     FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                             .setTimestampsInSnapshotsEnabled(true)
+                            .setPersistenceEnabled(true)
                             .build();
                     db.setFirestoreSettings(settings);
 
@@ -104,14 +105,13 @@ public class LoginActivity extends AppCompatActivity implements
                                 Log.d(TAG, "onComplete: successfully set the user client.");
                                 User user = task.getResult().toObject(User.class);
                                 ((UserClient)(getApplicationContext())).setUser(user);
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                                finish();
                             }
                         }
                     });
-
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
 
                 } else {
                     // User is signed out
