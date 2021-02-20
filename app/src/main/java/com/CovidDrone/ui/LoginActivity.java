@@ -45,6 +45,9 @@ public class LoginActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        setTitle("Test-on-the-Fly");
+
         mEmail = findViewById(R.id.email);
         mPassword = findViewById(R.id.password);
         mProgressBar = findViewById(R.id.progressBar);

@@ -44,6 +44,7 @@ public class RegisterActivity extends AppCompatActivity implements
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        setTitle("Test-on-the-Fly");
         mEmail = findViewById(R.id.input_email);
         mPassword = findViewById(R.id.input_password);
         mConfirmPassword = findViewById(R.id.input_confirm_password);

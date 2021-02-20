@@ -14,9 +14,7 @@ import android.widget.TextView;
 
 import com.CovidDrone.R;
 import com.CovidDrone.UseCases.Request;
-import com.CovidDrone.UserClient;
 import com.CovidDrone.models.Chatroom;
-import com.CovidDrone.models.User;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -61,7 +59,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
 
 
         Intent intent = getIntent();
-        mRequest = (Request) intent.getParcelableExtra(getString(R.string.intent_chatroom));
+        mRequest = intent.getParcelableExtra(getString(R.string.intent_chatroom));
 
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setTimestampsInSnapshotsEnabled(true)

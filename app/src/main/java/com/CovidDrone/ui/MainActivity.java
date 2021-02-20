@@ -3,7 +3,6 @@ package com.CovidDrone.ui;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.arch.lifecycle.ViewModelProvider;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -39,7 +38,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -49,10 +47,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.type.Date;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -245,9 +241,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private boolean checkMapServices(){
         if(isServicesOK()){
-            if(isMapsEnabled()){
-                return true;
-            }
+            return isMapsEnabled();
         }
         return false;
     }
@@ -315,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void initSupportActionBar(){
-        setTitle("Requests");
+        setTitle("My requests");
     }
 
     private void initRequestRecyclerView(){
