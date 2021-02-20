@@ -65,6 +65,7 @@ dependencies {
     // Circle ImageView
     implementation 'de.hdodenhof:circleimageview:2.2.0'
 
+
     //ZXing
     implementation 'com.google.zxing:javase:3.4.1'
     implementation 'com.google.zxing:core:3.4.1'
