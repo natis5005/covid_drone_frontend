@@ -56,14 +56,13 @@ public class ChatroomActivity extends AppCompatActivity implements
     private EditText mMessage;
 
     //vars
-    private ListenerRegistration mChatMessageEventListener, mUserListEventListener, mChatroomEventListener;
+    private ListenerRegistration mChatMessageEventListener, mUserListEventListener;
     private RecyclerView mChatMessageRecyclerView;
     private ChatMessageRecyclerAdapter mChatMessageRecyclerAdapter;
     private FirebaseFirestore mDb;
     private ArrayList<ChatMessage> mMessages = new ArrayList<>();
     private Set<String> mMessageIds = new HashSet<>();
     private ArrayList<User> mUserList = new ArrayList<>();
-    private String idForQR;
 
 
     @Override
@@ -85,7 +84,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void getChatMessages(){
 
         CollectionReference messagesRef = mDb
-                .collection(getString(R.string.collection_requests))
+                .collection(getString(R.string.collection_chatrooms))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chat_messages));
 
@@ -120,7 +119,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void getChatroomUsers(){
 
         CollectionReference usersRef = mDb
-                .collection(getString(R.string.collection_requests))
+                .collection(getString(R.string.collection_chatrooms))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chatroom_user_list));
 
@@ -184,7 +183,7 @@ public class ChatroomActivity extends AppCompatActivity implements
             message = message.replaceAll(System.getProperty("line.separator"), "");
 
             DocumentReference newMessageDoc = mDb
-                    .collection(getString(R.string.collection_requests))
+                    .collection(getString(R.string.collection_chatrooms))
                     .document(mChatroom.getChatroom_id())
                     .collection(getString(R.string.collection_chat_messages))
                     .document();
@@ -242,38 +241,10 @@ public class ChatroomActivity extends AppCompatActivity implements
         }
     }
 
-    private void createQR(){
-       DocumentReference request = mDb.collection(getString(R.string.collection_requests)).document(mChatroom.getChatroom_id());
-        String id = mChatroom.getChatroom_id();
-        Log.d(TAG, "onEvent queeeeerryyyyy: called with id:" + id);
-
-        ImageView image = new ImageView(this);
-        try {
-            image.setImageBitmap(TextToImageEncode(id));
-        } catch (WriterException e) {
-            e.printStackTrace();
-        }
-
-        AlertDialog.Builder builder =
-                new AlertDialog.Builder(this).
-                        setMessage("This is your QR code").
-                        setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).
-                        setView(image);
-        builder.create().show();
-
-
-
-    }
-
     private void leaveChatroom(){
 
         DocumentReference joinChatroomRef = mDb
-                .collection(getString(R.string.collection_requests))
+                .collection(getString(R.string.collection_chatrooms))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chatroom_user_list))
                 .document(FirebaseAuth.getInstance().getUid());
@@ -284,7 +255,7 @@ public class ChatroomActivity extends AppCompatActivity implements
     private void joinChatroom(){
 
         DocumentReference joinChatroomRef = mDb
-                .collection(getString(R.string.collection_requests))
+                .collection(getString(R.string.collection_chatrooms))
                 .document(mChatroom.getChatroom_id())
                 .collection(getString(R.string.collection_chatroom_user_list))
                 .document(FirebaseAuth.getInstance().getUid());
@@ -345,10 +316,6 @@ public class ChatroomActivity extends AppCompatActivity implements
                 leaveChatroom();
                 return true;
             }
-            case R.id.action_chatroom_qr:{
-                createQR();
-                return true;
-            }
             default:{
                 return super.onOptionsItemSelected(item);
             }
@@ -363,40 +330,6 @@ public class ChatroomActivity extends AppCompatActivity implements
                 insertNewMessage();
             }
         }
-    }
-
-    private Bitmap TextToImageEncode(String Value) throws WriterException {
-        BitMatrix bitMatrix;
-        try {
-            bitMatrix = new MultiFormatWriter().encode(
-                    Value,
-                    BarcodeFormat.DATA_MATRIX.QR_CODE,
-                    500, 500, null
-            );
-
-        } catch (IllegalArgumentException Illegalargumentexception) {
-
-            return null;
-        }
-        int bitMatrixWidth = bitMatrix.getWidth();
-
-        int bitMatrixHeight = bitMatrix.getHeight();
-
-        int[] pixels = new int[bitMatrixWidth * bitMatrixHeight];
-
-        for (int y = 0; y < bitMatrixHeight; y++) {
-            int offset = y * bitMatrixWidth;
-
-            for (int x = 0; x < bitMatrixWidth; x++) {
-
-                pixels[offset + x] = bitMatrix.get(x, y) ?
-                        getResources().getColor(R.color.Black):getResources().getColor(R.color.White);
-            }
-        }
-        Bitmap bitmap = Bitmap.createBitmap(bitMatrixWidth, bitMatrixHeight, Bitmap.Config.ARGB_4444);
-
-        bitmap.setPixels(pixels, 0, 500, 0, 0, bitMatrixWidth, bitMatrixHeight);
-        return bitmap;
     }
 
 }

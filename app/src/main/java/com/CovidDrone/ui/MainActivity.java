@@ -98,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_main);
 
 
-        mProgressBar = findViewById(R.id.progressBar);
+        mProgressBar = findViewById(R.id.progressBar_main);
         // mChatroomRecyclerView = findViewById(R.id.chatrooms_recycler_view);
-        mRequestRecyclerView = findViewById(R.id.chatrooms_recycler_view);
+        mRequestRecyclerView = findViewById(R.id.requests_recycler_view);
         findViewById(R.id.fab_create_request).setOnClickListener(this);
 
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -369,7 +369,6 @@ public class MainActivity extends AppCompatActivity implements
                     Log.d(TAG, "onEvent: number of requests: " + mRequests.size());
                     mRequestRecyclerAdapter.notifyDataSetChanged();
                 }
-
             }
         });
     }
@@ -381,12 +380,10 @@ public class MainActivity extends AppCompatActivity implements
                 .document();
 
         final Request request = new Request(requestName, mUserData, newRequestRef.getId());
-
+        showProgressBar();
         newRequestRef.set(request).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                hideDialog();
-
                 if(task.isSuccessful()){
                     navRequestActivity(request);
                 }else{
@@ -423,6 +420,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void navRequestActivity(Request request){
+        hideProgressBar();
         Intent intent = new Intent(MainActivity.this, RequestActivity.class);
         intent.putExtra(getString(R.string.intent_chatroom), request);
         startActivity(intent);
@@ -467,6 +465,7 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String requestName = "Request" + mUserData.getUser().getUsername() + mRequests.size();
+                showProgressBar();
                 buildNewRequest(requestName);
             }
         });
@@ -488,11 +487,11 @@ public class MainActivity extends AppCompatActivity implements
         finish();
     }
 
-    private void showDialog(){
+    private void showProgressBar(){
         mProgressBar.setVisibility(View.VISIBLE);
     }
 
-    private void hideDialog(){
+    private void hideProgressBar(){
         mProgressBar.setVisibility(View.GONE);
     }
 

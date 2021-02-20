@@ -57,6 +57,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         TextView requestName = findViewById(R.id.request_name);
         TextView date = findViewById(R.id.date);
 
+        mProgressBar = findViewById(R.id.progressBar_request);
 
         Intent intent = getIntent();
         mRequest = intent.getParcelableExtra(getString(R.string.intent_chatroom));
@@ -85,7 +86,10 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         mapView.onCreate(mapViewBundle);
         mapView.getMapAsync(this);
 
-        // buildNewChatroom(requestNameStr);
+        mChatroom = new Chatroom(null, null);
+        getChatroom(mChatroom);
+        if(mChatroom.getChatroom_id() == null)
+            buildNewChatroom();
         ImageView qrCode = findViewById(R.id.qrCode);
 
         try {
@@ -103,13 +107,13 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     private void cancelRequest(){
-        DocumentReference userRef = mDb.collection(getString(R.string.collection_requests))
+        DocumentReference ref = mDb.collection(getString(R.string.collection_requests))
                 .document(mRequest.getRequestId());
 
-        userRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+        ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Log.d("RequestActivity", "DocumentSnapshot successfully deleted!");
+                Log.d("RequestActivity", "RequestSnapshot successfully deleted!");
                 Intent intent = new Intent(RequestActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
@@ -118,9 +122,28 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w("RequestActivity", "Error deleting document", e);
+                        Log.w("RequestActivity", "Error deleting request", e);
                     }
         });
+
+        ref = mDb.collection(getString(R.string.collection_chatrooms))
+                .document(mChatroom.getChatroom_id());
+
+        ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d("RequestActivity", "ChatroomSnapshot successfully deleted!");
+                Intent intent = new Intent(RequestActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("RequestActivity", "Error deleting chatroom", e);
+                    }
+                });
     }
 
     private void navChatroomActivity(){
@@ -129,17 +152,16 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         startActivity(intent);
     }
 
-    private void buildNewChatroom(String chatroomName){
+    private void buildNewChatroom(){
 
-        final Chatroom chatroom = new Chatroom();
-        chatroom.setTitle(chatroomName);
+        mChatroom.setTitle("Chatroom" + mRequest.getTitle());
 
-        DocumentReference newChatroomRef = mDb.collection(getString(R.string.collection_requests))
+        DocumentReference newChatroomRef = mDb.collection(getString(R.string.collection_chatrooms))
                 .document();
 
-        chatroom.setChatroom_id(newChatroomRef.getId());
+        mChatroom.setChatroom_id(mRequest.getRequestId());
 
-        newChatroomRef.set(chatroom).addOnCompleteListener(new OnCompleteListener<Void>() {
+        newChatroomRef.set(mChatroom).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 hideDialog();
@@ -265,6 +287,23 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
                     Request r = task.getResult().toObject(Request.class);
                     t.setText(r.getUserData().getTimestamp().toString());
                 }
+            }
+        });
+    }
+
+    private void getChatroom(Chatroom ch){
+        DocumentReference chatroomRef = mDb.collection(getString(R.string.collection_chatrooms))
+                .document(mRequest.getRequestId());
+
+        chatroomRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                Log.d("RequestActivity", "onComplete: successfully got chatroom");
+                 Chatroom temp = task.getResult().toObject(Chatroom.class);
+                 if(temp != null) {
+                     ch.setChatroom_id(temp.getChatroom_id());
+                     ch.setTitle(temp.getTitle());
+                 }
             }
         });
     }

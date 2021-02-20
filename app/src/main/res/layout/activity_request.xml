@@ -21,8 +21,8 @@
 
     <Button
         android:id="@+id/cancel_request"
-        android:layout_width="81dp"
-        android:layout_height="38dp"
+        android:layout_width="110dp"
+        android:layout_height="55dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="64dp"
         android:layout_marginRight="64dp"
@@ -36,7 +36,7 @@
     <Button
         android:id="@+id/chat_request"
         android:layout_width="110dp"
-        android:layout_height="61dp"
+        android:layout_height="55dp"
         android:layout_marginStart="16dp"
         android:layout_marginLeft="16dp"
         android:onClick="onClick"
@@ -98,4 +98,15 @@
         app:layout_constraintBottom_toTopOf="@+id/qrCode"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapView" />
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar_request"
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"/>
 </android.support.constraint.ConstraintLayout>
