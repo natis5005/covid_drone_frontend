@@ -2,10 +2,10 @@ package com.CovidDrone.ui;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -86,10 +86,13 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         mapView.onCreate(mapViewBundle);
         mapView.getMapAsync(this);
 
-        mChatroom = new Chatroom(null, null);
-        getChatroom(mChatroom);
-        if(mChatroom.getChatroom_id() == null)
+        mChatroom = new Chatroom();
+
+        if(mRequest.getChatroomId() == null)
             buildNewChatroom();
+        else
+            getChatroom();
+
         ImageView qrCode = findViewById(R.id.qrCode);
 
         try {
@@ -100,6 +103,7 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     public void onClick(View view){
+        showProgressBar();
         if(view.getId() == R.id.cancel_request)
             cancelRequest();
         else if(view.getId() == R.id.chat_request)
@@ -107,14 +111,15 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
     private void cancelRequest(){
-        DocumentReference ref = mDb.collection(getString(R.string.collection_requests))
+        DocumentReference ref1 = mDb.collection(getString(R.string.collection_requests))
                 .document(mRequest.getRequestId());
 
-        ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+        ref1.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("RequestActivity", "RequestSnapshot successfully deleted!");
                 Intent intent = new Intent(RequestActivity.this, MainActivity.class);
+                hideProgressBar();
                 startActivity(intent);
                 finish();
             }
@@ -126,16 +131,13 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
                     }
         });
 
-        ref = mDb.collection(getString(R.string.collection_chatrooms))
+        DocumentReference ref2 = mDb.collection(getString(R.string.collection_chatrooms))
                 .document(mChatroom.getChatroom_id());
 
-        ref.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+        ref2.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d("RequestActivity", "ChatroomSnapshot successfully deleted!");
-                Intent intent = new Intent(RequestActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
             }
         })
                 .addOnFailureListener(new OnFailureListener() {
@@ -148,24 +150,55 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
 
     private void navChatroomActivity(){
         Intent intent = new Intent(RequestActivity.this, ChatroomActivity.class);
+        hideProgressBar();
         intent.putExtra(getString(R.string.intent_chatroom), mChatroom);
         startActivity(intent);
     }
 
+    private void getChatroom(){
+        DocumentReference chatroomRef = mDb.collection(getString(R.string.collection_chatrooms))
+                .document(mRequest.getChatroomId());
+
+        chatroomRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                Chatroom temp = task.getResult().toObject(Chatroom.class);
+                if(temp != null) {
+                    mChatroom = temp;
+                    Log.d("RequestActivity", "onComplete: successfully got chatroom");
+                }
+                else{
+                    Log.d("RequestActivity", "onComplete: failed to get chatroom");
+
+                }
+            }
+        });
+    }
+
     private void buildNewChatroom(){
-
-        mChatroom.setTitle("Chatroom" + mRequest.getTitle());
-
         DocumentReference newChatroomRef = mDb.collection(getString(R.string.collection_chatrooms))
                 .document();
+        DocumentReference requestRef = mDb.collection(getString(R.string.collection_requests))
+                .document(mRequest.getRequestId());
 
-        mChatroom.setChatroom_id(mRequest.getRequestId());
+        mChatroom.setTitle("Chatroom" + mRequest.getTitle());
+        mChatroom.setChatroom_id(newChatroomRef.getId());
+        mRequest.setChatroomId(newChatroomRef.getId());
 
         newChatroomRef.set(mChatroom).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                hideDialog();
+                if(!task.isSuccessful()){
+                    View parentLayout = findViewById(android.R.id.content);
+                    Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
+                }
+            }
+        });
 
+        requestRef.set(mRequest).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                hideProgressBar();
                 if(!task.isSuccessful()){
                     View parentLayout = findViewById(android.R.id.content);
                     Snackbar.make(parentLayout, "Something went wrong.", Snackbar.LENGTH_SHORT).show();
@@ -208,12 +241,32 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
         return bitmap;
     }
 
-    private void hideDialog(){
+    private void hideProgressBar(){
         mProgressBar.setVisibility(View.GONE);
+    }
+
+    private void showProgressBar(){
+        mProgressBar.setVisibility(View.VISIBLE);
     }
 
     private void initSupportActionBar(){
         setTitle(mRequest.getTitle());
+    }
+
+    private void getDateTime(TextView t){
+        DocumentReference userRef = mDb.collection(getString(R.string.collection_requests))
+                .document(mRequest.getRequestId());
+
+        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    Log.d("RequestActivity", "onComplete: successfully got date");
+                    Request r = task.getResult().toObject(Request.class);
+                    t.setText(r.getUserData().getTimestamp().toString());
+                }
+            }
+        });
     }
 
     @Override
@@ -273,38 +326,5 @@ public class RequestActivity extends AppCompatActivity implements OnMapReadyCall
                 mRequest.getUserData().getGeo_point().getLongitude());
         gmap.moveCamera(CameraUpdateFactory.newLatLng(here));
         gmap.addMarker(new MarkerOptions().position(here));
-    }
-
-    private void getDateTime(TextView t){
-        DocumentReference userRef = mDb.collection(getString(R.string.collection_requests))
-                .document(mRequest.getRequestId());
-
-        userRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if(task.isSuccessful()){
-                    Log.d("RequestActivity", "onComplete: successfully got date");
-                    Request r = task.getResult().toObject(Request.class);
-                    t.setText(r.getUserData().getTimestamp().toString());
-                }
-            }
-        });
-    }
-
-    private void getChatroom(Chatroom ch){
-        DocumentReference chatroomRef = mDb.collection(getString(R.string.collection_chatrooms))
-                .document(mRequest.getRequestId());
-
-        chatroomRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                Log.d("RequestActivity", "onComplete: successfully got chatroom");
-                 Chatroom temp = task.getResult().toObject(Chatroom.class);
-                 if(temp != null) {
-                     ch.setChatroom_id(temp.getChatroom_id());
-                     ch.setTitle(temp.getTitle());
-                 }
-            }
-        });
     }
 }

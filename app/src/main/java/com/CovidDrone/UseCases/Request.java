@@ -3,12 +3,14 @@ package com.CovidDrone.UseCases;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.CovidDrone.models.Chatroom;
 import com.CovidDrone.models.UserLocation;
 
 public class Request implements Parcelable {
     private String title;
     private UserLocation userData;
     private String requestId;
+    private String chatroomId;
 
     public Request(){
 
@@ -26,16 +28,20 @@ public class Request implements Parcelable {
         this.requestId = requestId;
     }
 
-    public Request(String title, UserLocation userLocation, String requestId){
+    public void setChatroomId(String chatroomId) {this.chatroomId = chatroomId;}
+
+    public Request(String title, UserLocation userLocation, String requestId, String chatroomId){
         this.title = title;
         this.userData = userLocation;
         this.requestId = requestId;
+        this.chatroomId = chatroomId;
     }
 
     protected Request(Parcel in) {
         title = in.readString();
         userData = in.readParcelable(UserLocation.class.getClassLoader());
         requestId = in.readString();
+        chatroomId = in.readString();
     }
 
     public static final Creator<Request> CREATOR = new Creator<Request>() {
@@ -62,12 +68,15 @@ public class Request implements Parcelable {
         return requestId;
     }
 
+    public String getChatroomId() {return chatroomId;}
+
     @Override
     public String toString() {
         return "Request{" +
                 "title=" + title +
-                "requestId" + requestId +
                 "userData=" + userData +
+                "requestId" + requestId +
+                "chatroomId" + chatroomId +
                 '}';
     }
 
@@ -81,5 +90,6 @@ public class Request implements Parcelable {
         dest.writeString(title);
         dest.writeParcelable(userData, flags);
         dest.writeString(requestId);
+        dest.writeString(chatroomId);
     }
 }

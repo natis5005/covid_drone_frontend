@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onRequestSelected(int position) {
+        showProgressBar();
         navRequestActivity(mRequests.get(position));
     }
 
@@ -379,8 +380,7 @@ public class MainActivity extends AppCompatActivity implements
                 .collection(getString(R.string.collection_requests))
                 .document();
 
-        final Request request = new Request(requestName, mUserData, newRequestRef.getId());
-        showProgressBar();
+        final Request request = new Request(requestName, mUserData, newRequestRef.getId(), null);
         newRequestRef.set(request).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -420,9 +420,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void navRequestActivity(Request request){
-        hideProgressBar();
         Intent intent = new Intent(MainActivity.this, RequestActivity.class);
         intent.putExtra(getString(R.string.intent_chatroom), request);
+        hideProgressBar();
         startActivity(intent);
     }
 
